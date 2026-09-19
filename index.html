@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Linear Timeline & Calendar Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Status & Time Header -->
+  <header>
+    <div class="status-group">
+      <div class="status-label">Now Active</div>
+      <div class="active-task-pill" id="activeTaskLabel">No scheduled block</div>
+    </div>
+    <div class="clock-display" id="clockDisplay">00:00:00</div>
+  </header>
+
+  <!-- Navigation Toolbar -->
+  <div class="nav-toolbar">
+    <div class="date-nav-controls">
+      <div style="display: flex; gap: 6px;">
+        <button class="nav-btn" id="btnPrev">&lt;</button>
+        <button class="nav-btn" id="btnToday">Today</button>
+        <button class="nav-btn" id="btnNext">&gt;</button>
+      </div>
+      <div class="current-date-heading" id="currentDateHeading">--</div>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="view-tabs">
+        <button class="tab-btn active" data-view="day">Day</button>
+        <button class="tab-btn" data-view="week">Week</button>
+        <button class="tab-btn" data-view="month">Month</button>
+      </div>
+      <button class="btn-create" id="btnOpenCreateModal">+ New Event</button>
+    </div>
+  </div>
+
+  <!-- Dynamic Views Container -->
+  <div class="view-card">
+    <!-- DAY VIEW -->
+    <div id="dayView">
+      <div class="timeline-scroll-container" id="dayScrollContainer">
+        <div class="timeline-viewport">
+          <div class="timeline-track" id="track">
+            <div class="guidelines" id="guidelinesLayer"></div>
+            <div id="bufferLayer"></div>
+            <div class="now-indicator" id="nowLine"></div>
+            <div class="drag-ghost" id="dragGhost" style="display: none;"></div>
+          </div>
+          <!-- Time label ruler (touch & swipe here to scroll the 24h timeline) -->
+          <div class="ruler-labels" id="rulerLabels" title="Swipe to scroll timeline"></div>
+        </div>
+      </div>
+
+      <!-- Time Budgeting & Metric Strip -->
+      <div class="metrics-panel" id="metricsPanel">
+        <div class="metrics-header" id="metricsToggle">
+          <div class="metrics-title">
+            <span>Time Budget & Allocation</span>
+            <span id="metricsToggleIcon" style="font-size: 0.6rem;">▼</span>
+          </div>
+          <div id="metricsTotalReadout" style="font-size: 0.72rem; font-weight: 700; color: var(--accent);">--</div>
+        </div>
+        <div class="metrics-bar-track" id="metricsBarTrack"></div>
+        <div class="metrics-chips" id="metricsChips"></div>
+      </div>
+    </div>
+
+    <!-- WEEK VIEW -->
+    <div id="weekView" style="display: none;">
+      <div class="week-scroll-container" id="weekScrollContainer">
+        <div class="week-container" id="weekRowsContainer"></div>
+        <div class="timeline-viewport" style="margin-top: 8px; margin-left: 95px;">
+          <div class="ruler-labels" id="weekRulerLabels"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONTH VIEW -->
+    <div id="monthView" style="display: none;">
+      <div class="month-grid" id="monthGrid"></div>
+    </div>
+  </div>
+
+  <!-- Schedule Feed Card -->
+  <div class="card-panel">
+    <div class="panel-header">
+      <div class="panel-title" id="feedTitle">Selected Day Events</div>
+    </div>
+    <div class="event-feed" id="eventFeed"></div>
+  </div>
+</div>
+
+<!-- CREATE EVENT MODAL POPUP -->
+<div class="modal-overlay" id="createModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="panel-title" style="font-size: 0.9rem;">Add Timeline Event</div>
+      <button class="modal-close-btn" id="btnCloseCreateModal">&times;</button>
+    </div>
+
+    <div class="form-group">
+      <label>Event Title</label>
+      <input type="text" id="evTitle" placeholder="e.g. Distributed Consensus Read" required>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="evDesc" placeholder="Scope, deliverables, or subtasks..."></textarea>
+    </div>
+
+    <!-- Start Date & Start Time -->
+    <div class="split-row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="evStartDate" required>
+      </div>
+      <div class="form-group">
+        <label>Start Time</label>
+        <input type="time" id="evStartTime" value="09:00" required>
+      </div>
+    </div>
+
+    <!-- End Date & End Time -->
+    <div class="split-row">
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="date" id="evEndDate" required>
+      </div>
+      <div class="form-group">
+        <label>End Time</label>
+        <input type="time" id="evEndTime" value="11:30" required>
+      </div>
+    </div>
+
+    <!-- Hex Color Picker -->
+    <div class="form-group">
+      <label>Hex Color</label>
+      <div class="hex-input-wrapper">
+        <div class="color-preview-box" id="colorPreview" style="background-color: #38bdf8;">
+          <input type="color" id="nativePicker" value="#38bdf8">
+        </div>
+        <input type="text" id="evHex" value="#38BDF8" maxlength="7" placeholder="#RRGGBB" style="flex: 1;">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" id="btnCancelCreate">Cancel</button>
+      <button class="btn-submit" id="addBtn">Commit Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSPECT EVENT MODAL POPUP -->
+<div class="modal-overlay" id="inspectModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mTitle" style="font-size: 1.05rem;">Event Details</h3>
+      <button class="modal-close-btn" id="mClose">&times;</button>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--accent);" id="mTime">00:00 - 00:00</div>
+    <p id="mDesc" style="font-size: 0.8rem; color: #d1d5db; line-height: 1.4;">Description</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
