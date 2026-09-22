@@ -1,7 +1,7 @@
 {
-  "name": "My Application",
-  "short_name": "MyApp",
-  "description": "My mobile web application",
+  "name": "Gridlock",
+  "short_name": "Gridlock",
+  "description": "Time blocker app",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
